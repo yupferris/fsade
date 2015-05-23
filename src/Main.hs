@@ -101,27 +101,23 @@ newProject info = do
           ]
         }
   let slnFilePath = solutionDirectory ++ "/" ++ name info ++ ".sln"
-  serializeSolution sln slnFilePath
+  serializeSolutionFile slnFilePath sln
 
-serializeSolution solution filePath =
-  withFile filePath WriteMode (serializeSolutionFile solution)
+serializeSolutionFile filePath = writeFile filePath . serializeSolution
 
-serializeSolutionFile solution handle = do
-  let lineCollections =
-        concatMap (\f -> f solution)
-        [
-          (\_ -> serializeSolutionHeader),
-          serializeSolutionVersions,
-          serializeSolutionGlobalSections
-        ]
-  let lines = unlines lineCollections
-  hPutStr handle lines
+serializeSolution solution =
+  unlines $ concatMap (\f -> f solution)
+  [
+    (\_ -> serializeSolutionHeader),
+    serializeSolutionVersions,
+    serializeSolutionGlobalSections
+  ]
 
 serializeSolutionHeader =
   [
     "",
     "Microsoft Visual Studio Solution File, Format Version 12.00",
-    ("# fsade " ++ showVersion version)
+    "# fsade " ++ showVersion version
   ]
 
 serializeSolutionVersions solution =
