@@ -138,10 +138,9 @@ serializeSolutionGlobalSections solution =
 scope = map $ (++) "\t"
 
 serializeSolutionGlobalSection (SolutionConfigurationPlatforms prePost platforms) =
-  [
-    "GlobalSection(TODO) = " ++ show prePost,
-    "EndGlobalSection"
-  ]
+  ["GlobalSection(SolutionConfigurationPlatforms) = " ++ show prePost] ++
+  (scope $ serializeSolutionGlobalSectionPlatforms platforms) ++
+  ["EndGlobalSection"]
 
 serializeSolutionGlobalSectionPlatforms platforms = platforms
 
