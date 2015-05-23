@@ -9,16 +9,15 @@ main = do
   let operation = parseArgs stringArgs
   perform operation
 
-data NewProjectInfo = NewProjectInfo
-  {
-    name :: String
+data NewProjectInfo = NewProjectInfo {
+  name :: String
   } deriving (Show)
 
 data Operation =
   None
   | NewProject NewProjectInfo
   | Invalid
-
+    
 parseArgs [] = None
 parseArgs ["new", arg] = NewProject NewProjectInfo { name = arg }
 parseArgs _ = Invalid
@@ -42,21 +41,19 @@ printHelp = do
   putStrLn "Commands:"
   putStrLn "\tnew <name>\tCreate a new F# project called <name>"
 
-data Solution = Solution
-  {
-    solutionName :: String,
-    vsVersion :: VisualStudioVersion,
-    minVsVersion :: VisualStudioVersion,
-    projects :: [Project],
-    globalSections :: [GlobalSection]
+data Solution = Solution {
+  solutionName :: String,
+  vsVersion :: VisualStudioVersion,
+  minVsVersion :: VisualStudioVersion,
+  projects :: [Project],
+  globalSections :: [GlobalSection]
   } deriving (Show)
 
-data VisualStudioVersion = VisualStudioVersion
-  {
-    a :: Int,
-    b :: Int,
-    c :: Int,
-    d :: Int
+data VisualStudioVersion = VisualStudioVersion {
+  a :: Int,
+  b :: Int,
+  c :: Int,
+  d :: Int
   }
 
 instance Show VisualStudioVersion where
@@ -67,13 +64,12 @@ instance Show VisualStudioVersion where
 visualStudioVersion a b c d =
   VisualStudioVersion { a = a, b = b, c = c, d = d }
 
-data Project = Project
-  {
-    projectName :: String
+data Project = Project {
+  projectName :: String
   } deriving (Show)
 
 data GlobalSection =
-  SolutionConfigurationPlatforms [String] -- TODO: This is crap :)
+  SolutionConfigurationPlatforms PrePostSolution [String] -- TODO: This is crap :)
   deriving (Show)
 
 data PrePostSolution = PreSolution | PostSolution
@@ -87,22 +83,23 @@ newProject info = do
   -- createDirectory solutionDirectory
 
   let sln = Solution {
-      solutionName = name info,
-      -- These version numbers are fairly arbitrary; stole them
-      -- from another solution file. They can probably be safely
-      -- adjusted to some degree :)
-      vsVersion = visualStudioVersion 12 0 30723 0,
-      minVsVersion = visualStudioVersion 10 0 40219 1,
-      projects = [],
-      globalSections =
-        [
-          SolutionConfigurationPlatforms
+        solutionName = name info,
+        -- These version numbers are fairly arbitrary; stole them
+        -- from another solution file. They can probably be safely
+        -- adjusted to some degree :)
+        vsVersion = visualStudioVersion 12 0 30723 0,
+        minVsVersion = visualStudioVersion 10 0 40219 1,
+        projects = [],
+        globalSections =
           [
-            "Debug|Any CPU = Debug|Any CPU",
-            "Release|Any CPU = Release|Any CPU"
+            SolutionConfigurationPlatforms
+            PreSolution
+            [
+              "Debug|Any CPU = Debug|Any CPU",
+              "Release|Any CPU = Release|Any CPU"
+            ]
           ]
-        ]
-    }
+        }
   let slnFilePath = solutionDirectory ++ "/" ++ name info ++ ".sln"
   serializeSolution sln slnFilePath
 
@@ -110,24 +107,42 @@ serializeSolution solution filePath =
   withFile filePath WriteMode (serializeSolutionFile solution)
 
 serializeSolutionFile solution handle = do
-  let l = hPutStrLn handle
-  serializeSolutionHeader solution l
-  serializeSolutionVersions solution l
-  serializeSolutionGlobalSections solution l
+  let lineCollections =
+        concatMap (\f -> f solution)
+        [
+          (\_ -> serializeSolutionHeader),
+          serializeSolutionVersions,
+          serializeSolutionGlobalSections
+        ]
+  let lines = unlines lineCollections
+  hPutStr handle lines
 
-serializeSolutionHeader solution l = do
-  l ""
-  l "Microsoft Visual Studio Solution File, Format Version 12.00"
-  l ("# fsade " ++ showVersion version)
+serializeSolutionHeader =
+  [
+    "",
+    "Microsoft Visual Studio Solution File, Format Version 12.00",
+    ("# fsade " ++ showVersion version)
+  ]
 
-serializeSolutionVersions solution l = do
-  l ("VisualStudioVersion = " ++ show (vsVersion solution))
-  l ("MinimumVisualStudioVersion = " ++ show (minVsVersion solution))
+serializeSolutionVersions solution =
+  [
+    "VisualStudioVersion = " ++ show (vsVersion solution),
+    "MinimumVisualStudioVersion = " ++ show (minVsVersion solution)
+  ]
 
-serializeSolutionGlobalSections solution l = do
-  l "Global"
-  let l' = l . ((++) "\t")
-  
-  l "EndGlobal"
+serializeSolutionGlobalSections solution =
+  ["Global"] ++
+  (scope $ concatMap serializeSolutionGlobalSection (globalSections solution)) ++
+  ["EndGlobal"]
+
+scope = map $ (++) "\t"
+
+serializeSolutionGlobalSection (SolutionConfigurationPlatforms prePost platforms) =
+  [
+    "GlobalSection(TODO) = " ++ show prePost,
+    "EndGlobalSection"
+  ]
+
+serializeSolutionGlobalSectionPlatforms platforms = platforms
 
 serializeProject _ = do return ()
