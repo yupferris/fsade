@@ -9,9 +9,8 @@ main = do
   let operation = parseArgs stringArgs
   perform operation
 
-data NewProjectInfo = NewProjectInfo
-                      { name :: String
-                      } deriving (Show)
+data NewProjectInfo = NewProjectInfo { name :: String
+                                     } deriving (Show)
 
 data Operation = None
                | NewProject NewProjectInfo
@@ -40,20 +39,18 @@ printHelp = do
   putStrLn "Commands:"
   putStrLn "\tnew <name>\tCreate a new F# project called <name>"
 
-data Solution = Solution
-                { solutionName :: String
-                , vsVersion :: VisualStudioVersion
-                , minVsVersion :: VisualStudioVersion
-                , projects :: [Project]
-                , globalSections :: [GlobalSection]
-                } deriving (Show)
+data Solution = Solution { solutionName :: String
+                         , vsVersion :: VisualStudioVersion
+                         , minVsVersion :: VisualStudioVersion
+                         , projects :: [Project]
+                         , globalSections :: [GlobalSection]
+                         } deriving (Show)
 
-data VisualStudioVersion = VisualStudioVersion
-                           { a :: Int
-                           , b :: Int
-                           , c :: Int
-                           , d :: Int
-                           }
+data VisualStudioVersion = VisualStudioVersion { a :: Int
+                                               , b :: Int
+                                               , c :: Int
+                                               , d :: Int
+                                               }
 
 instance Show VisualStudioVersion where
   show vsVersion =
@@ -67,9 +64,8 @@ visualStudioVersion a b c d =
                       , d = d
                       }
 
-data Project = Project
-               { projectName :: String
-               } deriving (Show)
+data Project = Project { projectName :: String
+                       } deriving (Show)
 
 data GlobalSection =
   SolutionConfigurationPlatforms PrePostSolution [String] -- TODO: This is crap :)
