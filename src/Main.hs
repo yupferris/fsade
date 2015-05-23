@@ -9,14 +9,13 @@ main = do
   let operation = parseArgs stringArgs
   perform operation
 
-data NewProjectInfo = NewProjectInfo {
-  name :: String
-  } deriving (Show)
+data NewProjectInfo = NewProjectInfo
+                      { name :: String
+                      } deriving (Show)
 
-data Operation =
-  None
-  | NewProject NewProjectInfo
-  | Invalid
+data Operation = None
+               | NewProject NewProjectInfo
+               | Invalid
     
 parseArgs [] = None
 parseArgs ["new", arg] = NewProject NewProjectInfo { name = arg }
@@ -41,20 +40,20 @@ printHelp = do
   putStrLn "Commands:"
   putStrLn "\tnew <name>\tCreate a new F# project called <name>"
 
-data Solution = Solution {
-  solutionName :: String,
-  vsVersion :: VisualStudioVersion,
-  minVsVersion :: VisualStudioVersion,
-  projects :: [Project],
-  globalSections :: [GlobalSection]
-  } deriving (Show)
+data Solution = Solution
+                { solutionName :: String
+                , vsVersion :: VisualStudioVersion
+                , minVsVersion :: VisualStudioVersion
+                , projects :: [Project]
+                , globalSections :: [GlobalSection]
+                } deriving (Show)
 
-data VisualStudioVersion = VisualStudioVersion {
-  a :: Int,
-  b :: Int,
-  c :: Int,
-  d :: Int
-  }
+data VisualStudioVersion = VisualStudioVersion
+                           { a :: Int
+                           , b :: Int
+                           , c :: Int
+                           , d :: Int
+                           }
 
 instance Show VisualStudioVersion where
   show vsVersion =
@@ -62,17 +61,22 @@ instance Show VisualStudioVersion where
     $ map (\f -> show $ f vsVersion) [a, b, c, d]
 
 visualStudioVersion a b c d =
-  VisualStudioVersion { a = a, b = b, c = c, d = d }
+  VisualStudioVersion { a = a
+                      , b = b
+                      , c = c
+                      , d = d
+                      }
 
-data Project = Project {
-  projectName :: String
-  } deriving (Show)
+data Project = Project
+               { projectName :: String
+               } deriving (Show)
 
 data GlobalSection =
   SolutionConfigurationPlatforms PrePostSolution [String] -- TODO: This is crap :)
   deriving (Show)
 
-data PrePostSolution = PreSolution | PostSolution
+data PrePostSolution = PreSolution
+                     | PostSolution
 
 instance Show PrePostSolution where
   show PreSolution = "preSolution"
@@ -82,24 +86,23 @@ newProject info = do
   let solutionDirectory = name info
   -- createDirectory solutionDirectory
 
-  let sln = Solution {
-        solutionName = name info,
-        -- These version numbers are fairly arbitrary; stole them
-        -- from another solution file. They can probably be safely
-        -- adjusted to some degree :)
-        vsVersion = visualStudioVersion 12 0 30723 0,
-        minVsVersion = visualStudioVersion 10 0 40219 1,
-        projects = [],
-        globalSections =
-          [
-            SolutionConfigurationPlatforms
-            PreSolution
-            [
-              "Debug|Any CPU = Debug|Any CPU",
-              "Release|Any CPU = Release|Any CPU"
-            ]
-          ]
-        }
+  -- The version numbers here are fairly arbitrary; stole them
+  -- from another solution file. They can probably be safely
+  -- adjusted to some degree :)
+  let sln = Solution { solutionName = name info
+                     , vsVersion = visualStudioVersion 12 0 30723 0
+                     , minVsVersion = visualStudioVersion 10 0 40219 1
+                     , projects = []
+                     , globalSections =
+                       [
+                         SolutionConfigurationPlatforms
+                         PreSolution
+                         [
+                           "Debug|Any CPU = Debug|Any CPU",
+                           "Release|Any CPU = Release|Any CPU"
+                         ]
+                       ]
+                     }
   let slnFilePath = solutionDirectory ++ "/" ++ name info ++ ".sln"
   serializeSolutionFile slnFilePath sln
 
