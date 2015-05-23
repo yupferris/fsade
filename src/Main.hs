@@ -1,8 +1,14 @@
 import System.Environment
+import System.Directory
+
+data NewProjectInfo = NewProjectInfo
+  {
+    name :: String
+  } deriving (Show)
 
 data Operation =
   None
-  | New String
+  | NewProject NewProjectInfo
   | Invalid
 
 main = do
@@ -11,12 +17,28 @@ main = do
   perform operation
 
 parseArgs [] = None
-parseArgs ["new", arg] = New arg
+parseArgs ["new", arg] = NewProject NewProjectInfo { name = arg }
 parseArgs _ = Invalid
 
-perform None = putStrLn "No arguments specified"
-perform (New name) = newProject name
-perform Invalid = putStrLn "Invalid arguments specified"
+perform None = printHelp
+perform (NewProject info) = newProject info
+perform Invalid = do
+  putStrLn "Invalid arguments specified"
+  printHelp
 
-newProject name =
-  putStrLn $ "New project: " ++ name
+printHelp = do
+  putStrLn "fsade: A simple tool for managing F# projects"
+  
+  putStrLn ""
+  
+  putStrLn "Usage:"
+  putStrLn "\tfsade <command> [<args>...]"
+  
+  putStrLn ""
+
+  putStrLn "Commands:"
+  putStrLn "\tnew <name>\tCreate a new F# project called <name>"
+
+newProject info = do
+  let directoryName = name info
+  createDirectory directoryName
