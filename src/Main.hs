@@ -42,6 +42,15 @@ printHelp = do
   putStrLn "Commands:"
   putStrLn "\tnew <name>\tCreate a new F# project called <name>"
 
+data Solution = Solution
+  {
+    solutionName :: String,
+    vsVersion :: VisualStudioVersion,
+    minVsVersion :: VisualStudioVersion,
+    projects :: [Project],
+    globalSections :: [GlobalSection]
+  } deriving (Show)
+
 data VisualStudioVersion = VisualStudioVersion
   {
     a :: Int,
@@ -63,13 +72,15 @@ data Project = Project
     projectName :: String
   } deriving (Show)
 
-data Solution = Solution
-  {
-    solutionName :: String,
-    vsVersion :: VisualStudioVersion,
-    minVsVersion :: VisualStudioVersion,
-    projects :: [Project]
-  } deriving (Show)
+data GlobalSection =
+  SolutionConfigurationPlatforms [String] -- TODO: This is crap :)
+  deriving (Show)
+
+data PrePostSolution = PreSolution | PostSolution
+
+instance Show PrePostSolution where
+  show PreSolution = "preSolution"
+  show PostSolution = "postSolution"
 
 newProject info = do
   let solutionDirectory = name info
@@ -82,7 +93,15 @@ newProject info = do
       -- adjusted to some degree :)
       vsVersion = visualStudioVersion 12 0 30723 0,
       minVsVersion = visualStudioVersion 10 0 40219 1,
-      projects = []
+      projects = [],
+      globalSections =
+        [
+          SolutionConfigurationPlatforms
+          [
+            "Debug|Any CPU = Debug|Any CPU",
+            "Release|Any CPU = Release|Any CPU"
+          ]
+        ]
     }
   let slnFilePath = solutionDirectory ++ "/" ++ name info ++ ".sln"
   serializeSolution sln slnFilePath
@@ -94,7 +113,7 @@ serializeSolutionFile solution handle = do
   let l = hPutStrLn handle
   serializeSolutionHeader solution l
   serializeSolutionVersions solution l
-  serializeSolutionGlobal solution l
+  serializeSolutionGlobalSections solution l
 
 serializeSolutionHeader solution l = do
   l ""
@@ -105,8 +124,10 @@ serializeSolutionVersions solution l = do
   l ("VisualStudioVersion = " ++ show (vsVersion solution))
   l ("MinimumVisualStudioVersion = " ++ show (minVsVersion solution))
 
-serializeSolutionGlobal solution l = do
+serializeSolutionGlobalSections solution l = do
   l "Global"
+  let l' = l . ((++) "\t")
+  
   l "EndGlobal"
 
 serializeProject _ = do return ()
