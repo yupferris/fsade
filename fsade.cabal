@@ -4,7 +4,7 @@
 name:                fsade
 version:             0.1.0.0
 synopsis:            A simple tool for managing F# projects
--- description:         
+-- description:
 license:             BSD2
 license-file:        LICENSE
 author:              Jake "ferris" Taylor
@@ -12,13 +12,13 @@ maintainer:          yupferris@gmail.com
 copyright:           (c) 2015, Jake "ferris" Taylor
 category:            Development
 build-type:          Simple
--- extra-source-files:  
+-- extra-source-files:
 cabal-version:       >=1.10
 
 executable fsade
   main-is:             Main.hs
-  -- other-modules:       
-  -- other-extensions:    
+  other-modules:       Solution
+  -- other-extensions:
   build-depends:       base >=4.8 && <4.9, directory
   hs-source-dirs:      src
   default-language:    Haskell2010

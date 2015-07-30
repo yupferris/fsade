@@ -1,21 +1,20 @@
 import System.Environment
 import System.Directory
 import System.IO
-import Paths_fsade (version)
-import Data.Version (showVersion)
+import Solution
 
 main = do
   stringArgs <- getArgs
   let operation = parseArgs stringArgs
   perform operation
 
-data NewProjectInfo = NewProjectInfo { name :: String
-                                     } deriving (Show)
-
 data Operation = None
                | NewProject NewProjectInfo
                | Invalid
-    
+
+data NewProjectInfo = NewProjectInfo { name :: String
+                                     } deriving (Show)
+
 parseArgs [] = None
 parseArgs ["new", arg] = NewProject NewProjectInfo { name = arg }
 parseArgs _ = Invalid
@@ -28,115 +27,25 @@ perform Invalid = do
 
 printHelp = do
   putStrLn "fsade: A simple tool for managing F# projects"
-  
+
   putStrLn ""
-  
+
   putStrLn "Usage:"
   putStrLn "\tfsade <command> [<args>...]"
-  
+
   putStrLn ""
 
   putStrLn "Commands:"
   putStrLn "\tnew <name>\tCreate a new F# project called <name>"
 
-data Solution = Solution { solutionName :: String
-                         , vsVersion :: VisualStudioVersion
-                         , minVsVersion :: VisualStudioVersion
-                         , projects :: [Project]
-                         , globalSections :: [GlobalSection]
-                         } deriving (Show)
-
-data VisualStudioVersion = VisualStudioVersion { a :: Int
-                                               , b :: Int
-                                               , c :: Int
-                                               , d :: Int
-                                               }
-
-instance Show VisualStudioVersion where
-  show vsVersion =
-    foldr1 (\x y -> x ++ "." ++ y)
-    $ map (\f -> show $ f vsVersion) [a, b, c, d]
-
-visualStudioVersion a b c d =
-  VisualStudioVersion { a = a
-                      , b = b
-                      , c = c
-                      , d = d
-                      }
-
-data Project = Project { projectName :: String
-                       } deriving (Show)
-
-data GlobalSection =
-  SolutionConfigurationPlatforms PrePostSolution [String] -- TODO: This is crap :)
-  deriving (Show)
-
-data PrePostSolution = PreSolution
-                     | PostSolution
-
-instance Show PrePostSolution where
-  show PreSolution = "preSolution"
-  show PostSolution = "postSolution"
-
 newProject info = do
+  -- TODO: Not entirely convinced this functionality should be top-level;
+  -- for instance, the knowledge that a solution exists in a folder (and
+  -- soon that projects may exist in subfolders) seems like it should live
+  -- in the solution/project module(s).
   let solutionDirectory = name info
-  -- createDirectory solutionDirectory
+  createDirectory solutionDirectory
 
-  -- The version numbers here are fairly arbitrary; stole them
-  -- from another solution file. They can probably be safely
-  -- adjusted to some degree :)
-  let sln = Solution { solutionName = name info
-                     , vsVersion = visualStudioVersion 12 0 30723 0
-                     , minVsVersion = visualStudioVersion 10 0 40219 1
-                     , projects = []
-                     , globalSections =
-                       [
-                         SolutionConfigurationPlatforms
-                         PreSolution
-                         [
-                           "Debug|Any CPU = Debug|Any CPU",
-                           "Release|Any CPU = Release|Any CPU"
-                         ]
-                       ]
-                     }
+  let sln = createDefaultSolution $ name info
   let slnFilePath = solutionDirectory ++ "/" ++ name info ++ ".sln"
   serializeSolutionFile slnFilePath sln
-
-serializeSolutionFile filePath = writeFile filePath . serializeSolution
-
-serializeSolution solution =
-  unlines $ concatMap (\f -> f solution)
-  [
-    (\_ -> serializeSolutionHeader),
-    serializeSolutionVersions,
-    serializeSolutionGlobalSections
-  ]
-
-serializeSolutionHeader =
-  [
-    "",
-    "Microsoft Visual Studio Solution File, Format Version 12.00",
-    "# fsade " ++ showVersion version
-  ]
-
-serializeSolutionVersions solution =
-  [
-    "VisualStudioVersion = " ++ show (vsVersion solution),
-    "MinimumVisualStudioVersion = " ++ show (minVsVersion solution)
-  ]
-
-serializeSolutionGlobalSections solution =
-  ["Global"] ++
-  (scope $ concatMap serializeSolutionGlobalSection (globalSections solution)) ++
-  ["EndGlobal"]
-
-scope = map $ (++) "\t"
-
-serializeSolutionGlobalSection (SolutionConfigurationPlatforms prePost platforms) =
-  ["GlobalSection(SolutionConfigurationPlatforms) = " ++ show prePost] ++
-  (scope $ serializeSolutionGlobalSectionPlatforms platforms) ++
-  ["EndGlobalSection"]
-
-serializeSolutionGlobalSectionPlatforms platforms = platforms
-
-serializeProject _ = do return ()
