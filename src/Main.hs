@@ -40,9 +40,9 @@ printHelp = do
 
 newProject info = do
   -- TODO: Not entirely convinced this functionality should be top-level;
-  -- for instance, the knowledge that a solution exists in a folder (and
-  -- soon that projects may exist in subfolders) seems like it should live
-  -- in the solution/project module(s).
+  --  for instance, the knowledge that a solution exists in a folder (and
+  --  soon that projects may exist in subfolders) seems like it should live
+  --  in the solution/project module(s).
   let solutionDirectory = name info
   createDirectory solutionDirectory
 

@@ -47,8 +47,8 @@ instance Show PrePostSolution where
 
 createDefaultSolution name =
   -- The version numbers here are fairly arbitrary; stole them
-  -- from another solution file. They can probably be safely
-  -- adjusted to some degree :)
+  --  from another solution file. They can probably be safely
+  --  adjusted to some degree :)
   Solution { solutionName = name
            , vsVersion = visualStudioVersion 12 0 30723 0
            , minVsVersion = visualStudioVersion 10 0 40219 1
