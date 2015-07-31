@@ -3,8 +3,8 @@ module Solution
        , serializeSolutionFile
        ) where
 
-import Paths_fsade (version)
 import Data.Version (showVersion)
+import Paths_fsade (version)
 import Project
 
 data Solution = Solution { solutionName :: String

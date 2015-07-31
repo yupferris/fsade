@@ -1,6 +1,7 @@
 import System.Environment
 import System.Directory
 import System.IO
+import Project
 import Solution
 
 main = do
@@ -45,6 +46,13 @@ newProject info = do
   --  in the solution/project module(s).
   let solutionDirectory = name info
   createDirectory solutionDirectory
+
+  let projectDirectory = solutionDirectory ++ "/" ++ name info
+  createDirectory projectDirectory
+
+  let proj = createDefaultProject $ name info
+  let projFilePath = projectDirectory ++ "/" ++ name info ++ ".fsproj"
+  serializeProjectFile projFilePath proj
 
   let sln = createDefaultSolution $ name info
   let slnFilePath = solutionDirectory ++ "/" ++ name info ++ ".sln"
