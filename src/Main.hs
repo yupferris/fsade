@@ -54,6 +54,18 @@ newProject info = do
   let projFilePath = projectDirectory ++ "/" ++ name info ++ ".fsproj"
   serializeProjectFile projFilePath proj
 
+  -- TODO: These should REALLY be part of project serialization
+  let programFilePath = projectDirectory ++ "/" ++ "Program.fs"
+  writeFile programFilePath $ unlines
+    [ "// Learn more about F# at http://fsharp.net"
+    , "// See the 'F# Tutorial' project for more help."
+    , ""
+    , "[<EntryPoint>]"
+    , "let main argv ="
+    , "    printfn \"%A\" argv"
+    , "    0 // return an integer exit code"
+    ]
+
   let sln = createDefaultSolution $ name info
   let slnFilePath = solutionDirectory ++ "/" ++ name info ++ ".sln"
   serializeSolutionFile slnFilePath sln
