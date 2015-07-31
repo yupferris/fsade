@@ -4,13 +4,17 @@ module Project
        , serializeProjectFile
        ) where
 
+import Data.UUID
+import Data.UUID.V4
 import Text.XML.Light
 
 data Project = Project { projectName :: String
+                       , guid :: UUID
                        } deriving (Show)
 
-createDefaultProject name =
-  Project { projectName = name }
+createDefaultProject name = do
+  guid <- nextRandom
+  return Project { projectName = name, guid = guid }
 
 serializeProject = ppTopElement . serializeProjectXml
 
@@ -28,7 +32,7 @@ serializeProjectXml project =
        [ unode "Configuration" (attr "Condition" " '$(Configuration)' == '' ", "Debug")
        , unode "Platform" (attr "Condition" " '$(Platform)' == '' ", "AnyCPU")
        , unode "SchemaVersion" "2.0"
-       , unode "ProjectGuid" "TODO" -- TODO: Generate GUID as part of project structure and serialize here
+       , unode "ProjectGuid" $ toString $ guid project
        , unode "OutputType" "Exe"
        , unode "RootNamespace" $ projectName project
        , unode "AssemblyName" $ projectName project

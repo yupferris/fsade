@@ -51,7 +51,7 @@ newProject info = do
   let projectDirectory = solutionDirectory ++ "/" ++ name info
   createDirectory projectDirectory
 
-  let proj = createDefaultProject $ name info
+  proj <- createDefaultProject $ name info
   let projFilePath = projectDirectory ++ "/" ++ name info ++ ".fsproj"
   serializeProjectFile projFilePath proj
 
