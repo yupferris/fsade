@@ -3,6 +3,7 @@ import System.Directory
 import System.IO
 import Project
 import Solution
+import Text.XML.Light -- TODO: Remove when project files are moved
 
 main = do
   stringArgs <- getArgs
@@ -55,7 +56,7 @@ newProject info = do
   serializeProjectFile projFilePath proj
 
   -- TODO: These should REALLY be part of project serialization
-  let programFilePath = projectDirectory ++ "/" ++ "Program.fs"
+  let programFilePath = projectDirectory ++ "/Program.fs"
   writeFile programFilePath $ unlines
     [ "// Learn more about F# at http://fsharp.net"
     , "// See the 'F# Tutorial' project for more help."
@@ -66,6 +67,18 @@ newProject info = do
     , "    0 // return an integer exit code"
     ]
 
+  let configFilePath = projectDirectory ++ "/App.config"
+  writeFile configFilePath
+    $ ppTopElement
+    $ unode "configuration"
+    $ unode "startup"
+    $ unode "supportedRuntime"
+    [ attr "version" "v4.0"
+    , attr "sku" ".NETFramework,Version=v4.5"
+    ]
+
   let sln = createDefaultSolution $ name info
   let slnFilePath = solutionDirectory ++ "/" ++ name info ++ ".sln"
   serializeSolutionFile slnFilePath sln
+
+attr name value = Attr (unqual name) value -- TODO: Remove when project files are moved
