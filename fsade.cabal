@@ -17,7 +17,7 @@ cabal-version:       >=1.10
 
 executable fsade
   main-is:             Main.hs
-  other-modules:       Solution
+  other-modules:       Solution, Project
   -- other-extensions:
   build-depends:       base >=4.8 && <4.9, directory
   hs-source-dirs:      src

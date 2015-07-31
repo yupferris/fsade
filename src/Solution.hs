@@ -5,6 +5,7 @@ module Solution
 
 import Paths_fsade (version)
 import Data.Version (showVersion)
+import Project
 
 data Solution = Solution { solutionName :: String
                          , vsVersion :: VisualStudioVersion
@@ -30,9 +31,6 @@ visualStudioVersion a b c d =
                       , c = c
                       , d = d
                       }
-
-data Project = Project { projectName :: String
-                       } deriving (Show)
 
 data GlobalSection =
   SolutionConfigurationPlatforms PrePostSolution [String] -- TODO: This is crap :)
@@ -100,5 +98,3 @@ serializeSolutionGlobalSection (SolutionConfigurationPlatforms prePost platforms
   ["EndGlobalSection"]
 
 serializeSolutionGlobalSectionPlatforms platforms = platforms
-
-serializeProject _ = do return ()
