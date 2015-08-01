@@ -36,8 +36,10 @@ visualStudioVersion a b c d =
                       , d = d
                       }
 
-data GlobalSection = SolutionConfigurationPlatforms PrePostSolution [String] -- TODO: This is crap :)
-                   | SolutionProperties PrePostSolution Bool -- TODO: This is also crap :P
+-- TODO: This type isn't very well thought-out
+data GlobalSection = SolutionConfigurationPlatforms PrePostSolution [String]
+                   | ProjectConfigurationPlatforms PrePostSolution [(UUID, [String])]
+                   | SolutionProperties PrePostSolution Bool
                    deriving (Show)
 
 data PrePostSolution = PreSolution
@@ -66,9 +68,18 @@ createDefaultSolution name =
              ]
            }
 
+-- TODO: This won't correctly handle the case where a project is already in the solution
 addProject projectFilePath project solution = do
-  guid <- nextRandom
-  return solution { projects = (guid, projectFilePath, project) : projects solution }
+  solutionLocalProjectGuid <- nextRandom
+  return solution { projects = (solutionLocalProjectGuid, projectFilePath, project) : projects solution
+                  , globalSections = ProjectConfigurationPlatforms PostSolution
+                                     [ (guid project,
+                                        [ "Debug|Any CPU.ActiveCfg = Debug|Any CPU"
+                                        , "Debug|Any CPU.Build.0 = Debug|Any CPU"
+                                        , "Release|Any CPU.ActiveCfg = Release|Any CPU"
+                                        , "Release|Any CPU.Build.0 = Release|Any CPU"
+                                        ]) ]
+                                     : globalSections solution}
 
 serializeSolutionFile filePath = writeFile filePath . serializeSolution
 
@@ -114,8 +125,12 @@ serializeSolutionGlobalSections solution =
 scope = map $ (++) "\t"
 
 serializeSolutionGlobalSection (SolutionConfigurationPlatforms prePost platforms) =
-  serializeSolutionGlobalSectionContents "SolutionConfigurationPlatforms" prePost
-  $ serializeSolutionGlobalSectionPlatforms platforms
+  serializeSolutionGlobalSectionContents "SolutionConfigurationPlatforms" prePost platforms
+
+serializeSolutionGlobalSection (ProjectConfigurationPlatforms prePost projectConfigurationPlatforms) =
+  serializeSolutionGlobalSectionContents "ProjectConfigurationPlatforms" prePost
+  $ concatMap (\(guid, strings) ->
+                map ((++) $ "{" ++ (map toUpper $ toString guid) ++ "}.") strings) projectConfigurationPlatforms
 
 serializeSolutionGlobalSection (SolutionProperties prePost hideSolutionNode) =
   serializeSolutionGlobalSectionContents "SolutionProperties" prePost
@@ -125,5 +140,3 @@ serializeSolutionGlobalSectionContents name prePost contents =
   ["GlobalSection(" ++ name ++ ") = " ++ show prePost] ++
   (scope $ contents) ++
   ["EndGlobalSection"]
-
-serializeSolutionGlobalSectionPlatforms platforms = platforms
