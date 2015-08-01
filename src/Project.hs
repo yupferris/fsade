@@ -83,9 +83,10 @@ serializeProjectXml project =
        (unode "MinimumVisualStudioVersion" (attr "Condition" "'$(MinimumVisualStudioVersion)' == ''", "11"))
      , unode "Choose"
        [ unode "When"
-         $ unode "PropertyGroup"
-         (attr "Condition" "Exists('$(MSBuildExtensionsPath32)\\..\\Microsoft SDKs\\F#\\3.0\\Framework\\v4.0\\Microsoft.FSharp.Targets')",
-          unode "FSharpTargetsPath" "$(MSBuildExtensionsPath32)\\..\\Microsoft SDKs\\F#\\3.0\\Framework\\v4.0\\Microsoft.FSharp.Targets")
+         (attr "Condition" "'$(VisualStudioVersion)' == '11.0'",
+          unode "PropertyGroup"
+          (attr "Condition" "Exists('$(MSBuildExtensionsPath32)\\..\\Microsoft SDKs\\F#\\3.0\\Framework\\v4.0\\Microsoft.FSharp.Targets')",
+           unode "FSharpTargetsPath" "$(MSBuildExtensionsPath32)\\..\\Microsoft SDKs\\F#\\3.0\\Framework\\v4.0\\Microsoft.FSharp.Targets"))
        , unode "Otherwise"
          $ unode "PropertyGroup"
          (attr "Condition" "Exists('$(MSBuildExtensionsPath32)\\Microsoft\\VisualStudio\\v$(VisualStudioVersion)\\FSharp\\Microsoft.FSharp.Targets')",
