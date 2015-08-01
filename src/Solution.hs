@@ -109,7 +109,7 @@ serializeSolutionProjects solution =
   concatMap serializeSolutionProject $ projects solution
 
 serializeSolutionProject (solutionLocalProjectGuid, projectFilePath, project) =
-  ["Project(\"{" ++ (serializeGuid solutionLocalProjectGuid) ++ "\"}) = "
+  ["Project(\"{" ++ (serializeGuid solutionLocalProjectGuid) ++ "}\") = "
    ++ "\"" ++ (projectName project) ++ "\", "
    ++ "\"" ++ (map (\c -> if c == '/' then '\\' else c) projectFilePath) ++ "\", "
    ++ "\"{" ++ (serializeGuid $ guid project)  ++ "}\""] ++
