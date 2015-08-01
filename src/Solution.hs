@@ -1,16 +1,20 @@
 module Solution
        ( createDefaultSolution
+       , addProject
        , serializeSolutionFile
        ) where
 
+import Data.Char
 import Data.Version (showVersion)
+import Data.UUID
+import Data.UUID.V4
 import Paths_fsade (version)
 import Project
 
 data Solution = Solution { solutionName :: String
                          , vsVersion :: VisualStudioVersion
                          , minVsVersion :: VisualStudioVersion
-                         , projects :: [Project]
+                         , projects :: [(UUID, String, Project)]
                          , globalSections :: [GlobalSection]
                          } deriving (Show)
 
@@ -62,6 +66,10 @@ createDefaultSolution name =
              ]
            }
 
+addProject projectFilePath project solution = do
+  guid <- nextRandom
+  return solution { projects = (guid, projectFilePath, project) : projects solution }
+
 serializeSolutionFile filePath = writeFile filePath . serializeSolution
 
 serializeSolution solution =
@@ -69,6 +77,7 @@ serializeSolution solution =
   [
     (\_ -> serializeSolutionHeader),
     serializeSolutionVersions,
+    serializeSolutionProjects,
     serializeSolutionGlobalSections
   ]
 
@@ -84,6 +93,18 @@ serializeSolutionVersions solution =
     "VisualStudioVersion = " ++ show (vsVersion solution),
     "MinimumVisualStudioVersion = " ++ show (minVsVersion solution)
   ]
+
+serializeSolutionProjects solution =
+  concatMap serializeSolutionProject $ projects solution
+
+serializeSolutionProject (solutionLocalProjectGuid, projectFilePath, project) =
+  ["Project(\"{" ++ (serializeGuid solutionLocalProjectGuid) ++ "\"}) = "
+   ++ "\"" ++ (projectName project) ++ "\", "
+   ++ "\"" ++ (map (\c -> if c == '/' then '\\' else c) projectFilePath) ++ "\", "
+   ++ "\"{" ++ (serializeGuid $ guid project)  ++ "}\""] ++
+  ["EndProject"]
+
+serializeGuid = map toUpper . toString
 
 serializeSolutionGlobalSections solution =
   ["Global"] ++

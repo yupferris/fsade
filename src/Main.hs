@@ -48,15 +48,18 @@ newProject info = do
   let solutionDirectory = name info
   createDirectory solutionDirectory
 
-  let projectDirectory = solutionDirectory ++ "/" ++ name info
-  createDirectory projectDirectory
+  let localProjDirectory = name info
+  let absoluteProjDirectory = solutionDirectory ++ "/" ++ localProjDirectory
+  createDirectory absoluteProjDirectory
 
   proj <- createDefaultProject $ name info
-  let projFilePath = projectDirectory ++ "/" ++ name info ++ ".fsproj"
-  serializeProjectFile projFilePath proj
+  let projFileName = name info ++ ".fsproj"
+  let localProjFilePath = localProjDirectory ++ "/" ++ projFileName
+  let absoluteProjFilePath = absoluteProjDirectory ++ "/" ++ projFileName
+  serializeProjectFile absoluteProjFilePath proj
 
   -- TODO: These should REALLY be part of project serialization
-  let programFilePath = projectDirectory ++ "/Program.fs"
+  let programFilePath = absoluteProjDirectory ++ "/Program.fs"
   writeFile programFilePath $ unlines
     [ "// Learn more about F# at http://fsharp.net"
     , "// See the 'F# Tutorial' project for more help."
@@ -67,7 +70,7 @@ newProject info = do
     , "    0 // return an integer exit code"
     ]
 
-  let configFilePath = projectDirectory ++ "/App.config"
+  let configFilePath = absoluteProjDirectory ++ "/App.config"
   writeFile configFilePath
     $ ppTopElement
     $ unode "configuration"
@@ -77,7 +80,7 @@ newProject info = do
     , attr "sku" ".NETFramework,Version=v4.5"
     ]
 
-  let sln = createDefaultSolution $ name info
+  sln <- addProject localProjFilePath proj $ createDefaultSolution $ name info
   let slnFilePath = solutionDirectory ++ "/" ++ name info ++ ".sln"
   serializeSolutionFile slnFilePath sln
 

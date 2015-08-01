@@ -1,5 +1,7 @@
 module Project
        ( Project
+       , projectName
+       , guid
        , createDefaultProject
        , serializeProjectFile
        ) where
