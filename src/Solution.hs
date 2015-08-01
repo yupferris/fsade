@@ -32,9 +32,9 @@ visualStudioVersion a b c d =
                       , d = d
                       }
 
-data GlobalSection =
-  SolutionConfigurationPlatforms PrePostSolution [String] -- TODO: This is crap :)
-  deriving (Show)
+data GlobalSection = SolutionConfigurationPlatforms PrePostSolution [String] -- TODO: This is crap :)
+                   | SolutionProperties PrePostSolution Bool -- TODO: This is also crap :P
+                   deriving (Show)
 
 data PrePostSolution = PreSolution
                      | PostSolution
@@ -52,13 +52,13 @@ createDefaultSolution name =
            , minVsVersion = visualStudioVersion 10 0 40219 1
            , projects = []
            , globalSections =
-             [
-               SolutionConfigurationPlatforms
+             [ SolutionConfigurationPlatforms
                PreSolution
                [
                  "Debug|Any CPU = Debug|Any CPU",
                  "Release|Any CPU = Release|Any CPU"
                ]
+             , SolutionProperties PreSolution False
              ]
            }
 
@@ -93,8 +93,16 @@ serializeSolutionGlobalSections solution =
 scope = map $ (++) "\t"
 
 serializeSolutionGlobalSection (SolutionConfigurationPlatforms prePost platforms) =
-  ["GlobalSection(SolutionConfigurationPlatforms) = " ++ show prePost] ++
-  (scope $ serializeSolutionGlobalSectionPlatforms platforms) ++
+  serializeSolutionGlobalSectionContents "SolutionConfigurationPlatforms" prePost
+  $ serializeSolutionGlobalSectionPlatforms platforms
+
+serializeSolutionGlobalSection (SolutionProperties prePost hideSolutionNode) =
+  serializeSolutionGlobalSectionContents "SolutionProperties" prePost
+  ["HideSolutionNode = " ++ if hideSolutionNode then "TRUE" else "FALSE"]
+
+serializeSolutionGlobalSectionContents name prePost contents =
+  ["GlobalSection(" ++ name ++ ") = " ++ show prePost] ++
+  (scope $ contents) ++
   ["EndGlobalSection"]
 
 serializeSolutionGlobalSectionPlatforms platforms = platforms
