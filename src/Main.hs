@@ -61,13 +61,10 @@ newProject info = do
   -- TODO: These should REALLY be part of project serialization
   let programFilePath = absoluteProjDirectory ++ "/Program.fs"
   writeFile programFilePath $ unlines
-    [ "// Learn more about F# at http://fsharp.net"
-    , "// See the 'F# Tutorial' project for more help."
-    , ""
-    , "[<EntryPoint>]"
+    [ "[<EntryPoint>]"
     , "let main argv ="
     , "    printfn \"%A\" argv"
-    , "    0 // return an integer exit code"
+    , "    0"
     ]
 
   let configFilePath = absoluteProjDirectory ++ "/App.config"
